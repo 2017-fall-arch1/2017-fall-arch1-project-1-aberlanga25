@@ -1,36 +1,18 @@
-#ifndef llist_included		/* prevent multiple inclusion */
-#define llist_included
 
 
-/* a linked-list item */
-typedef struct LLItem_s {
-  struct LLItem_s *next; 
-  char *str;
-} LLItem;
+struct bst * newNode(int num, const char * info);
 
-/* a list of LLItems */
-typedef struct {
-  LLItem *first, *last;
-} LList;
+struct bst * insertN(struct bst * root, int num, const char * info);
 
-extern int llDoCheck;		/* set true for paranoid consistency checking */
+struct bst * searchN(struct bst * leftL);
 
-/* create a new list */
-LList *llAlloc();
+struct bst * deleteN(struct bst * root, const char * name);
 
-/* free memory associated with a list, discarding all items it contains */
-void llFree(LList *lp);
+void traverse(struct bst * root);
 
-/* append a copy of str to end of list */
-void llPut(LList *lp, char *s);
+void readFile();
 
-/* Delete all elements off of the list */
-void llMakeEmpty(LList *lp);
+void writeFile(struct bst *root);
 
-/* print list membership.  Prints default mesage if message is NULL */
-void llPrint(LList *lp, char *msg);
 
-/* check llist consistency, always returns zero */
-int llCheck(LList *lp);
 
-#endif	/* included */

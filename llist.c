@@ -1,101 +1,128 @@
-#include <stdio.h>		/* for puts,  */
-#include <stdlib.h> 		/* for malloc */
-#include <assert.h>		/* for assert */
-#include "llist.h"		
+#include <stdio.h>
+#include <unistd.h>
+#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
+#include "llist.h"
 
-int llDoCheck = 1;		/* set true for paranoid consistency checking */
+#define NAME_TEST "db.txt"
 
-#define doCheck(_lp) (llDoCheck && llCheck(_lp))
+struct bst {
+    char name[26];
+    int lng;
+    struct bst *left;
+    struct bst *right;
+};
 
-/* create a new list */
-LList *llAlloc()
-{
-  LList *lp = (LList *)malloc(sizeof(LList));
-  lp->first = lp->last = 0;
-  doCheck(lp);
-  return lp;
+struct bst *root = 0;
+
+struct bst * newNode(int num, const char * info){//Create A New Node
+    struct bst * node = (struct bst*) malloc(sizeof(struct bst));
+    node ->lng=num;
+    strcpy(node->name,info);
+    printf(node->name," was added.");
+    node->left=0;
+    node->right=0;
+    return node;
+};
+
+void traverse(struct bst *root){//It goes through all the BST and print every node
+    if(root !=0){
+        traverse(root->left);
+        printf("Name: ",root->name);
+        traverse(root->right);
+    }else{
+        printf("Leaf");
+    }
 }
 
-/* recycle a list, discarding all items it contains */
-void llFree(LList *lp)
-{
-  doCheck(lp);
-  llMakeEmpty(lp);
-  free(lp);
+struct bst * insertN(struct bst * root, int num, const char * info){
+    //Insert a new node depending on the length of the name
+    if(root==NULL){
+        root = newNode(num,info);
+    }else{
+        if(num<=root->lng){
+            root->left = insertN(root->left,num,info);
+        }else{
+            root->right = insertN(root->right,num,info);
+        }
+    }
+    return root;
+};
+
+struct bst * searchN(struct bst * leftL){
+    //Search the minimum left node
+    struct bst * current = leftL;
+    while(current->left !=NULL){
+        current = current->left;
+    }
+    return current;
+};
+
+struct bst * deleteN(struct bst * root, const char * name){
+//transverse the BTS until it find the node to delete
+    if(root==NULL){
+        return root;
+    }
+    if(strlen(name)<strlen(root->name)){
+        root->left = deleteN(root->left,name);
+    }else if(strlen(name)>strlen(root->name)){
+        root->right = deleteN(root->right,name);
+    }else{
+        if(root->left==NULL){
+            struct bst * tmp = root->right;
+            free(root);
+            return tmp;
+        }else if(root->right==NULL){
+            struct bst * tmp = root->left;
+            free(root);
+            return tmp;
+        }
+        struct bst * tmp = searchN(root->right);
+        strcpy(root->name,tmp->name);
+
+        root->right=deleteN(root->right,tmp->name);
+    }
+    return root;
+};
+
+void writeFile(struct bst * root){
+    //Write the BTS on a txt file
+    FILE * file = fopen(NAME_TEST,"a+");
+
+    if(root!=0){
+        fputs(root->name,file);
+        fputs("\n",file);
+        writeFile(root->left);
+        writeFile(root->right);
+    }
+    else{
+        if(root == 0)
+            printf("Processing request...\n");
+        else
+            printf("\nroot != NULL %d");
+    }
+    fclose(file);
 }
 
-/* Delete all elements off of the list */
-void llMakeEmpty(LList *lp)
-{
-  LLItem *current = lp->first, *next;
-  doCheck(lp);
-  while (current) {
-    next = current->next;
-    free(current->str);
-    free(current);
-    current = next;
-  }
-  lp->first = lp->last = 0;	/* list is empty */
-  doCheck(lp);
-}
-  
-/* append a copy of str to end of list */
-void llPut(LList *lp, char *s)
-{
-  int len;
-  char *scopy;
-  LLItem *i;
+void readFile(){ //reads a file
+    int i = 0;
+    int line = 1;
+    char ch[100];
 
-  doCheck(lp);
-  /* w = freshly allocated copy of putWord */
-  for (len = 0; s[len]; len++) /* compute length */
-    ;
-  scopy = (char *)malloc(len+1);
-  for (len = 0; s[len]; len++) /* copy chars */
-    scopy[len] = s[len];
-  scopy[len] = 0;			/* terminate copy */
+    FILE *file = fopen("db.txt","r");
 
-
-  /* i = new item containing s */
-  i = (LLItem *)malloc(sizeof(LLItem));
-  i->str = scopy;
-  i->next = 0;
-
-  /* append to end of list */
-  if (lp->last) {			/* list not empty */
-    lp->last->next = i;
-  } else {			/* list empty */
-    lp->first = i;
-  }
-
-  /* new item is last on list */
-  lp->last = i;
-  doCheck(lp);
-}
-
-/* print list membership.  Prints default mesage if message is NULL */
-void llPrint(LList *lp, char *msg)
-{
-  LLItem *ip;
-  int count = 1;
-  doCheck(lp);
-  puts(msg ? msg :" List contents:");
-  for (ip = lp->first; ip; ip = ip->next) {
-    printf("  %d: <%s>\n", count, ip->str);
-    count++;
-  }
-}
-
-/* check llist consistency */
-int llCheck(LList *lp)
-{
-  LLItem *ip;
-  ip = lp->first;
-  if (!ip) 
-    assert(lp->last == 0);
-  else {
-    for (; ip->next; ip = ip->next);
-    assert(ip == lp->last);
-  }
-  return 0;
+    if(file){
+        while(line){
+         if( fscanf(file,"%s",&ch[i]) != EOF){
+             printf("\n%s",&ch[i]);
+         }
+         else{
+             line = 0;
+             printf("\nWe are done!");
+         }
+         i++;
+        }
+        fclose(file);
+    }
 }
