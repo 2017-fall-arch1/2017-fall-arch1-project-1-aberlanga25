@@ -1,23 +1,11 @@
-all: llDemo
+output: Main.o llist.o
+	cc Main.o llist.o -o output
 
-CFLAGS=-g -O3
+Main.o: Main.c
+	cc -c Main.c
 
-# Symbols helpful for understanding the productions
-#   $@ is the production's target
-#   $^ are the production's prerequisites
-
-llDemo: llist.o llDemo.o
-	cc -o $@ $^
-
-llist.o: llist.c llist.h
-	cc -c $(CFLAGS) llist.c
-
-llDemo.o: llDemo.c llist.h
-	cc -c $(CFLAGS) llDemo.c
+llist.o: llist.c
+	cc -c llist.c
 
 clean:
-	rm -f *.o llDemo
-
-demo: llDemo
-	(echo first; echo "second line"; echo "third and last") | ./llDemo
-
+	rm -f *.o output
