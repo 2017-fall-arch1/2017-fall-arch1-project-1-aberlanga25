@@ -47,7 +47,7 @@ int menu(struct bst * root){
         return 0;
     }else if(choice==6){
         printf("Exiting program\n");
-        sleep(3);
+        //sl(3);
         return 0;
     }else{
         printf("Selected option wasn't available");

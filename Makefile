@@ -9,3 +9,6 @@ llist.o: llist.c
 
 clean:
 	rm -f *.o output
+
+main:
+	./output
